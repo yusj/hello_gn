@@ -1,11 +1,11 @@
 # Generated from 'DEPS'
-build_with_chromium = true
-checkout_android = true
+build_with_chromium = !local_porting
+checkout_android = !local_porting
 checkout_android_prebuilts_build_tools = false
-checkout_android_native_support = true
+checkout_android_native_support = !local_porting
 checkout_google_benchmark = false
 checkout_ios_webkit = false
-checkout_nacl = true
+checkout_nacl = !local_porting
 checkout_oculus_sdk = false
 checkout_openxr = false
 cros_boards = ""

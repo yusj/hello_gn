@@ -73,8 +73,11 @@ config("compiler") {
   } else {
     assert(false, "Architecture not supported")
   }
-  cflags += [ "--target=$abi_target$compile_api_level" ]
-  ldflags += [ "--target=$abi_target$compile_api_level" ]
+  if (is_clang || !local_porting) {
+    cflags += [ "--target=$abi_target$compile_api_level" ]
+    ldflags += [ "--target=$abi_target$compile_api_level" ]
+  } else if (abi_target == "" || local_porting) {
+  }
 
   # TODO(crbug.com/771171): Remove this define once code that uses it has been
   # updated to no longer need it. This is leftover from older Android NDK
@@ -102,12 +105,12 @@ config("runtime_library") {
   # strto{d,f,l,ul}_l. These symbols are not used by our libc++, and newer NDKs
   # don't provide a libandroid_support.a on 64-bit platforms, so we only depend
   # on this library on 32-bit platforms.
-  if (current_cpu == "arm" || current_cpu == "x86") {
+  if ((current_cpu == "arm" || current_cpu == "x86") && !local_porting) {
     libs += [ "android_support" ]
   }
 
   # arm builds of libc++ starting in NDK r12 depend on unwind.
-  if (current_cpu == "arm") {
+  if (current_cpu == "arm" && !local_porting) {
     libs += [ "unwind" ]
   }
 
@@ -127,9 +130,11 @@ config("runtime_library") {
 }
 
 config("hide_all_but_jni_onload") {
-  ldflags = [ "-Wl,--version-script=" + rebase_path(
-                  "//build/android/android_only_explicit_jni_exports.lst",
-                  root_build_dir) ]
+  if (!local_porting) {
+    ldflags = [ "-Wl,--version-script=" + rebase_path(
+                    "//build/android/android_only_explicit_jni_exports.lst",
+                    root_build_dir) ]
+  }
 }
 
 config("hide_all_but_jni") {

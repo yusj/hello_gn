@@ -35,6 +35,9 @@ declare_args() {
 
   # Whether we should use glib, a low level C utility library.
   use_glib = is_desktop_linux && !is_chromecast
+  if (local_porting) {
+    use_glib = false
+  }
 }
 
 # Additional dependent variables -----------------------------------------------

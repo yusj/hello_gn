@@ -167,7 +167,10 @@ def _LoadToolchainEnv(cpu, sdk_dir, target_store):
     # Explicitly specifying the SDK version to build with to avoid accidentally
     # building with a new and untested SDK. This should stay in sync with the
     # packaged toolchain in build/vs_toolchain.py.
-    args.append('10.0.19041.0')
+    #ifdef LOCAL_PORTING
+    # args.append('10.0.19041.0')
+    args.append('10.0.18362.0')
+    #endif  // LOCAL_PORTING
     variables = _LoadEnvFromBat(args)
   return _ExtractImportantEnvironment(variables)
 

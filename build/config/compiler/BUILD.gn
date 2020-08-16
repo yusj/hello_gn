@@ -18,7 +18,11 @@ import("//build/config/ui.gni")
 import("//build/toolchain/cc_wrapper.gni")
 import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
-import("//build_overrides/build.gni")
+if (local_porting) {
+  import("//build/build_overrides.gni")
+} else {
+  import("//build_overrides/build.gni")
+}
 
 if (current_cpu == "arm" || current_cpu == "arm64") {
   import("//build/config/arm.gni")
@@ -254,11 +258,18 @@ config("compiler") {
 
   configs += [
     # See the definitions below.
-    ":clang_revision",
+    #ifdef LOCAL_PORTING
+    #":clang_revision",
+    #endif  // LOCAL_PORTING
     ":compiler_cpu_abi",
     ":compiler_codegen",
     ":compiler_deterministic",
   ]
+  if (!local_porting) {
+    configs += [
+      ":clang_revision",
+    ]
+  }
 
   # In general, Windows is totally different, but all the other builds share
   # some common GCC configuration.
@@ -395,7 +406,7 @@ config("compiler") {
         "-Wl,--as-needed",
       ]
     }
-    if (use_lld && !is_chromeos_device) {
+    if (use_lld && !is_chromeos_device && !local_porting) {
       # TODO(thakis): Fix dump_syms to not need this and then remove it,
       # https://crbug.com/1105559
       ldflags += [
@@ -704,7 +715,7 @@ config("compiler") {
   if (use_lld) {
     if (is_win) {
       ldflags += [ "/call-graph-profile-sort:no" ]
-    } else {
+    } else if (!local_porting) {
       ldflags += [ "-Wl,--no-call-graph-profile-sort" ]
     }
   }
@@ -1066,7 +1077,7 @@ config("compiler_codegen") {
     configs += [ "//build/config/nacl:compiler_codegen" ]
   }
 
-  if (current_cpu == "arm64" && is_android) {
+  if (current_cpu == "arm64" && is_android && (is_clang || !local_porting)) {
     # On arm64 disable outlining for Android. See crbug.com/931297 for more
     # information.
     cflags += [ "-mno-outline" ]
@@ -1155,7 +1166,7 @@ config("compiler_deterministic") {
 }
 
 config("clang_revision") {
-  if (is_clang && clang_base_path == default_clang_base_path) {
+  if (is_clang && clang_base_path == default_clang_base_path && !local_porting) {
     update_args = [
       "--print-revision",
       "--verify-version=$clang_version",
@@ -1445,7 +1456,7 @@ config("default_warnings") {
 
       # -Wno-class-memaccess warns about hash table and vector in blink.
       # But the violation is intentional.
-      if (!is_nacl) {
+      if (!is_nacl && !local_porting) {
         cflags_cc += [ "-Wno-class-memaccess" ]
       }
 
@@ -1466,7 +1477,9 @@ config("default_warnings") {
 
       # -Wpacked-not-aligned complains all generated mojom-shared-internal.h
       # files.
-      cflags += [ "-Wno-packed-not-aligned" ]
+      if (!local_porting) {
+        cflags += [ "-Wno-packed-not-aligned" ]
+      }
     }
   }
 
@@ -1510,7 +1523,7 @@ config("default_warnings") {
         cflags += [ "-Wno-nonportable-include-path" ]
       }
 
-      if (current_toolchain == host_toolchain || !use_xcode_clang) {
+      if ((current_toolchain == host_toolchain || !use_xcode_clang) && !local_porting) {
         # Flags NaCl (Clang 3.7) and Xcode 9.2 (Clang clang-900.0.39.2) do not
         # recognize.
         cflags += [
@@ -2320,8 +2333,13 @@ config("symbols") {
     if (is_clang && !is_nacl && !use_xcode_clang && !is_mac && !is_ios) {
       cflags += [
         "-Xclang",
-        "-debug-info-kind=constructor",
+        #ifdef LOCAL_PORTING
+        #"-debug-info-kind=constructor",
+        #endif  // LOCAL_PORTING
       ]
+      if (!local_porting) {
+        cflags += [ "-debug-info-kind=constructor", ]
+      }
     }
 
     if (use_debug_fission && !is_nacl && !is_android) {

@@ -1,7 +1,9 @@
 import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/dcheck_always_on.gni")
-import("//buildtools/deps_revisions.gni")
+if (!local_porting) {
+  import("//buildtools/deps_revisions.gni")
+}
 
 assert(use_custom_libcxx, "should only be used if use_custom_libcxx is set")
 
@@ -107,7 +109,9 @@ config("runtime_library") {
     ]
     cflags_objcc = cflags_cc
 
-    defines += [ "CR_LIBCXX_REVISION=$libcxx_svn_revision" ]
+    if (!local_porting) {
+      defines += [ "CR_LIBCXX_REVISION=$libcxx_svn_revision" ]
+    }
 
     # Make sure we don't link against the system libstdc++ or libc++.
     if (is_clang) {

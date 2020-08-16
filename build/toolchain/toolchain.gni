@@ -6,7 +6,11 @@
 # toolchain() rules themselves.
 
 import("//build/config/chrome_build.gni")
-import("//build_overrides/build.gni")
+if (local_porting) {
+  import("//build/build_overrides.gni")
+} else {
+  import("//build_overrides/build.gni")
+}
 
 declare_args() {
   # If this is set to true, or if LLVM_FORCE_HEAD_REVISION is set to 1
@@ -54,7 +58,11 @@ if (is_apple) {
 } else if (is_android && is_component_build) {
   # By appending .cr, we prevent name collisions with libraries already
   # loaded by the Android zygote.
-  shlib_extension = ".cr.so"
+  if (local_porting) {
+    shlib_extension = ".so"
+  } else {
+    shlib_extension = ".cr.so"
+  }
 } else if (is_posix || is_fuchsia) {
   shlib_extension = ".so"
 } else if (is_win) {

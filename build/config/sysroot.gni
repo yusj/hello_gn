@@ -26,6 +26,9 @@ declare_args() {
                 current_cpu == "mipsel" || current_cpu == "mips64el"
 }
 
+if (local_porting) {
+  use_sysroot = false
+}
 if (sysroot == "") {
   if (current_os == target_os && current_cpu == target_cpu &&
       target_sysroot != "") {
@@ -34,7 +37,15 @@ if (sysroot == "") {
     import("//build/config/android/config.gni")
 
     # Android uses unified headers, and thus a single compile time sysroot
-    sysroot = "$android_toolchain_root/sysroot"
+    if (is_clang || !local_porting) {
+      sysroot = "$android_toolchain_root/sysroot"
+    } else {
+      _arch_suffix = current_cpu
+      if (current_cpu == "x64") {
+        _arch_suffix = android_app_abi
+      }
+      sysroot = "$android_ndk_root/platforms/android-$android_ndk_api_level/arch-$_arch_suffix"
+    }
   } else if ((is_linux || is_chromeos) && use_sysroot) {
     # By default build against a sysroot image downloaded from Cloud Storage
     # during gclient runhooks.

@@ -46,13 +46,15 @@ if (current_toolchain == default_toolchain) {
   } else {
     configuration_name = "Release"
   }
-  exec_script("../../vs_toolchain.py",
-              [
-                "copy_dlls",
-                rebase_path(root_build_dir),
-                configuration_name,
-                target_cpu,
-              ])
+  if (!local_porting) {
+    exec_script("../../vs_toolchain.py",
+                [
+                  "copy_dlls",
+                  rebase_path(root_build_dir),
+                  configuration_name,
+                  target_cpu,
+                ])
+  }
 }
 
 if (host_os == "win") {

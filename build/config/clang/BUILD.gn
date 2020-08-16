@@ -5,7 +5,7 @@
 import("clang.gni")
 
 config("find_bad_constructs") {
-  if (clang_use_chrome_plugins) {
+  if (clang_use_chrome_plugins && !local_porting) {
     cflags = []
 
     # The plugin is built directly into clang, so there's no need to load it

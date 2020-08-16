@@ -8,6 +8,14 @@ import("//build/config/gclient_args.gni")
 # non-Chromium builds.
 # default_android_ndk_root = "//third_party/android_ndk"
 # default_android_ndk_version = "r10e"
+#ifdef LOCAL_PORTING
+declare_args() {
+  default_android_ndk_root = ""
+  default_android_ndk_version = ""
+  default_android_ndk_major_version = -1
+  default_android_ndk_gcc_toolchain_version = "4.9"
+}
+#endif  // LOCAL_PORTING
 
 # Some non-Chromium builds don't support building java targets.
 enable_java_templates = true
@@ -29,7 +37,7 @@ declare_args() {
 
   # Allows googletest to pretty-print various absl types.  Disabled for nacl due
   # to lack of toolchain support.
-  gtest_enable_absl_printers = !is_nacl
+  gtest_enable_absl_printers = !is_nacl && !local_porting
 }
 
 # Allows different projects to specify their own suppression/ignore lists for

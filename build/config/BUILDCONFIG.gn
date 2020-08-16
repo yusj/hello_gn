@@ -46,6 +46,10 @@
 # When writing build files, to do something only for the host:
 #   if (current_toolchain == host_toolchain) { ...
 
+#ifdef LOCAL_PORTING
+local_porting = true
+#endif
+
 if (target_os == "") {
   target_os = host_os
 }
@@ -223,7 +227,11 @@ _default_toolchain = ""
 if (target_os == "android") {
   assert(host_os == "linux" || host_os == "mac",
          "Android builds are only supported on Linux and Mac hosts.")
-  _default_toolchain = "//build/toolchain/android:android_clang_$target_cpu"
+  if (is_clang || !local_porting) {
+    _default_toolchain = "//build/toolchain/android:android_clang_$target_cpu"
+  } else {
+    _default_toolchain = "//build/toolchain/android:android_gcc_$target_cpu"
+  }
 } else if (target_os == "chromeos" || target_os == "linux") {
   # See comments in build/toolchain/cros/BUILD.gn about board compiles.
   if (is_clang) {
@@ -610,7 +618,11 @@ foreach(_target_type,
         if (defined(output_extension)) {
           _shlib_extension = ".$output_extension"
         } else if (is_component_build && _target_type != "loadable_module") {
-          _shlib_extension = ".cr.so"
+          if (local_porting) {
+            _shlib_extension = ".so"
+          } else {
+            _shlib_extension = ".cr.so"
+          }
         } else {
           _shlib_extension = ".so"
         }

@@ -20,6 +20,11 @@ declare_args() {
   # This value is the default location, override if you have a different
   # installation location.
   windows_sdk_path = "C:\Program Files (x86)\Windows Kits\10"
+
+  #ifdef LOCAL_PORTING
+  # Path to Visual Studio version related path.
+  vs_install_dir = ""
+  #endif // LOCAL_PORTING
 }
 
 if (visual_studio_path == "") {
@@ -36,4 +41,7 @@ if (visual_studio_path == "") {
   assert(wdk_path != "",
          "You must set the wdk_path if you set the visual studio path")
   visual_studio_runtime_dirs = []
+  if (local_porting) {
+    visual_studio_runtime_dirs = "${vs_install_dir}\VC\Tools\MSVC\14.27.29110\bin\Hostx64\${target_cpu}"
+  }
 }
